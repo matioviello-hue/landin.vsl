@@ -5,7 +5,7 @@ export function VideoSection() {
         <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border bg-card">
           <iframe
             className="absolute inset-0 h-full w-full"
-            src="https://www.youtube.com/embed/7YqQjvd7cyg?rel=0"
+            src="https://www.youtube.com/embed/7YqQjvd7cyg?autoplay=1&mute=1&playsinline=1&rel=0"
             title="Video de presentación"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
