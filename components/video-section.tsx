@@ -24,7 +24,7 @@ export function VideoSection() {
           <video
             ref={videoRef}
             className="absolute inset-0 h-full w-full object-cover"
-            src=https://github.com/matioviello-hue/landin.vsl/blob/main/public/vsl%20oficial%202026%20landing%20(1).mp4
+            src= public/vsl oficial 2026 landing (1).mp4
             autoPlay
             muted
             playsInline
