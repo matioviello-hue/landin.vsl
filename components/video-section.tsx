@@ -7,7 +7,7 @@ export function VideoSection() {
         <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border bg-black">
           <video
             className="absolute inset-0 h-full w-full object-cover"
-            src="public/vsl oficial 2026 landing (1).mp4"
+            src="vsl.mp4"
             autoPlay
             playsInline
             loop
