@@ -11,36 +11,56 @@ declare global {
 export function VideoSection() {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const playerRef = useRef<any>(null);
+
   const [ready, setReady] = useState(false);
   const [muted, setMuted] = useState(true);
 
-  // 1) Carga player.js y crea el player
+  // Progress
+  const [progress, setProgress] = useState(0); // 0..1
+
   useEffect(() => {
     const initPlayer = () => {
       if (!iframeRef.current || !window.Vimeo?.Player) return;
 
-      playerRef.current = new window.Vimeo.Player(iframeRef.current);
+      const player = new window.Vimeo.Player(iframeRef.current);
+      playerRef.current = player;
 
-      playerRef.current.ready().then(() => {
-        setReady(true);
-        // aseguramos silencio inicial para autoplay
-        playerRef.current.setVolume(0).catch(() => {});
-      });
+      player
+        .ready()
+        .then(async () => {
+          setReady(true);
+
+          // asegurar volumen 0 al inicio (autoplay)
+          try {
+            await player.setVolume(0);
+          } catch {}
+
+          // Actualizar barra de progreso en tiempo real
+          // timeupdate trae { seconds, duration, percent }
+          player.on("timeupdate", (data: any) => {
+            if (typeof data?.percent === "number") {
+              setProgress(Math.max(0, Math.min(1, data.percent)));
+              return;
+            }
+            if (typeof data?.seconds === "number" && typeof data?.duration === "number" && data.duration > 0) {
+              setProgress(Math.max(0, Math.min(1, data.seconds / data.duration)));
+            }
+          });
+        })
+        .catch(() => {
+          // si algo falla igual no rompemos la página
+        });
     };
 
-    // Si ya está cargado el script
+    // Si ya existe Vimeo.Player, inicializamos
     if (window.Vimeo?.Player) {
       initPlayer();
       return;
     }
 
-    // Si no, lo cargamos
-    const existing = document.querySelector(
-      'script[src="https://player.vimeo.com/api/player.js"]'
-    );
-
+    // Si no, cargamos player.js
+    const existing = document.querySelector('script[src="https://player.vimeo.com/api/player.js"]');
     if (existing) {
-      // si existe pero todavía no está listo, intentamos init luego
       const t = setTimeout(initPlayer, 300);
       return () => clearTimeout(t);
     }
@@ -52,22 +72,15 @@ export function VideoSection() {
     document.body.appendChild(script);
   }, []);
 
-  // 2) Toggle sonido SIN mostrar controles (seguimos en background=1)
-  const toggleSound = async () => {
+  const enableSound = async () => {
     const p = playerRef.current;
     if (!p) return;
 
     try {
-      // el click del usuario habilita audio en la mayoría de navegadores
-      if (muted) {
-        await p.setVolume(1); // 0..1
-        setMuted(false);
-      } else {
-        await p.setVolume(0);
-        setMuted(true);
-      }
+      // El click del usuario habilita audio en navegadores
+      await p.setVolume(1);
+      setMuted(false);
     } catch (e) {
-      // Si falla por permisos/privacidad del embed, suele ser settings de Vimeo
       console.error(e);
     }
   };
@@ -78,9 +91,9 @@ export function VideoSection() {
         <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-black">
           <iframe
             ref={iframeRef}
-            // background=1 => NO hay barra, NO hay controles
-            // muted=1 => autoplay seguro
-            src="https://player.vimeo.com/video/1169674089?autoplay=1&muted=1&loop=1&background=1&autopause=0"
+            // background=1 -> no controles, no barra, no scrub
+            // muted=1 para autoplay consistente (el sonido se habilita via API con click)
+            src="https://player.vimeo.com/video/1169674089?autoplay=1&muted=1&loop=0&background=1&autopause=0"
             className="absolute inset-0 h-full w-full"
             frameBorder="0"
             allow="autoplay; fullscreen; picture-in-picture"
@@ -88,14 +101,25 @@ export function VideoSection() {
             title="Video presentación"
           />
 
-          <button
-            type="button"
-            onClick={toggleSound}
-            disabled={!ready}
-            className="absolute bottom-4 right-4 rounded-md bg-black/70 px-4 py-2 text-sm text-white hover:bg-black/80 disabled:opacity-50"
-          >
-            {muted ? "🔊 Activar sonido" : "🔇 Silenciar"}
-          </button>
+          {/* Botón grande que desaparece cuando se activa el sonido */}
+          {muted && (
+            <button
+              type="button"
+              onClick={enableSound}
+              disabled={!ready}
+              className="absolute bottom-6 right-6 rounded-xl bg-black/80 px-6 py-4 text-lg font-semibold text-white shadow-lg hover:bg-black/90 transition-all disabled:opacity-50"
+            >
+              🔊 Activar sonido
+            </button>
+          )}
+
+          {/* Barra de progreso (siempre visible, sin permitir scrub) */}
+          <div className="absolute bottom-0 left-0 h-1 w-full bg-white/15">
+            <div
+              className="h-full bg-white/80 transition-[width] duration-150"
+              style={{ width: `${Math.round(progress * 100)}%` }}
+            />
+          </div>
         </div>
       </div>
     </section>
