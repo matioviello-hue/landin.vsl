@@ -1,19 +1,44 @@
-const CALENDLY_URL = "https://calendly.com/your-link"
+"use client";
+
+import { useEffect } from "react";
+
+const CALENDLY_URL =
+ "https://calendly.com/matiovierro/sesion-de-consultoria-1-a-1-clon"
 
 export function CtaSection() {
+  useEffect(() => {
+    // Carga el script del widget (una sola vez)
+    const existing = document.querySelector(
+      'script[src="https://assets.calendly.com/assets/external/widget.js"]'
+    );
+    if (existing) return;
+
+    const s = document.createElement("script");
+    s.src = "https://assets.calendly.com/assets/external/widget.js";
+    s.async = true;
+    document.body.appendChild(s);
+  }, []);
+
   return (
     <section className="px-6 py-10 text-center md:py-14">
-      <a
-        href={CALENDLY_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:brightness-110 hover:shadow-xl hover:shadow-primary/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:px-10 md:py-5 md:text-lg"
-      >
-        Agendar análisis integral
-      </a>
-      <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-muted-foreground md:text-base">
+      <h2 className="text-2xl md:text-3xl font-semibold mb-3">
+        Agendá tu análisis integral
+      </h2>
+      <p className="mx-auto mb-6 max-w-xl text-sm md:text-base text-muted-foreground">
         Te mostramos exactamente qué sistema implementar primero.
       </p>
+
+      {/* Calendly INLINE (sin redirigir) */}
+      <div
+        className="mx-auto max-w-3xl rounded-lg overflow-hidden border border-border bg-black"
+        style={{ minHeight: 720 }}
+      >
+        <div
+          className="calendly-inline-widget"
+          data-url={CALENDLY_URL}
+          style={{ minWidth: "320px", height: "720px" }}
+        />
+      </div>
     </section>
-  )
+  );
 }
