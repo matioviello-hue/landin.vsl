@@ -15,9 +15,10 @@ export function VideoSection() {
   const [ready, setReady] = useState(false);
   const [muted, setMuted] = useState(true);
 
-  // Progress
+  // Barra "fake"
   const [progress, setProgress] = useState(0); // 0..1
 
+  // 1) Inicializar Vimeo player (para audio)
   useEffect(() => {
     const initPlayer = () => {
       if (!iframeRef.current || !window.Vimeo?.Player) return;
@@ -29,37 +30,22 @@ export function VideoSection() {
         .ready()
         .then(async () => {
           setReady(true);
-
-          // asegurar volumen 0 al inicio (autoplay)
           try {
-            await player.setVolume(0);
+            await player.setVolume(0); // silencio inicial para autoplay
           } catch {}
-
-          // Actualizar barra de progreso en tiempo real
-          // timeupdate trae { seconds, duration, percent }
-          player.on("timeupdate", (data: any) => {
-            if (typeof data?.percent === "number") {
-              setProgress(Math.max(0, Math.min(1, data.percent)));
-              return;
-            }
-            if (typeof data?.seconds === "number" && typeof data?.duration === "number" && data.duration > 0) {
-              setProgress(Math.max(0, Math.min(1, data.seconds / data.duration)));
-            }
-          });
         })
-        .catch(() => {
-          // si algo falla igual no rompemos la página
-        });
+        .catch(() => {});
     };
 
-    // Si ya existe Vimeo.Player, inicializamos
     if (window.Vimeo?.Player) {
       initPlayer();
       return;
     }
 
-    // Si no, cargamos player.js
-    const existing = document.querySelector('script[src="https://player.vimeo.com/api/player.js"]');
+    const existing = document.querySelector(
+      'script[src="https://player.vimeo.com/api/player.js"]'
+    );
+
     if (existing) {
       const t = setTimeout(initPlayer, 300);
       return () => clearTimeout(t);
@@ -72,12 +58,42 @@ export function VideoSection() {
     document.body.appendChild(script);
   }, []);
 
+  // 2) Animación de barra: sube rápido a 70% y luego oscila
+  useEffect(() => {
+    let raf = 0;
+    const start = performance.now();
+
+    const FAST_MS = 1200; // velocidad hasta 70%
+    const BASE = 0.7; // 70%
+    const AMP = 0.04; // oscila +-4% (66% a 74%)
+    const PERIOD_MS = 2600; // frecuencia de vaivén
+
+    const tick = (now: number) => {
+      const t = now - start;
+
+      if (t < FAST_MS) {
+        // easeOut hacia 70%
+        const x = t / FAST_MS; // 0..1
+        const eased = 1 - Math.pow(1 - x, 3); // easeOutCubic
+        setProgress(BASE * eased);
+      } else {
+        const tt = t - FAST_MS;
+        const wave = Math.sin((2 * Math.PI * tt) / PERIOD_MS); // -1..1
+        const p = BASE + AMP * wave;
+        setProgress(Math.max(0, Math.min(1, p)));
+      }
+
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
   const enableSound = async () => {
     const p = playerRef.current;
     if (!p) return;
-
     try {
-      // El click del usuario habilita audio en navegadores
       await p.setVolume(1);
       setMuted(false);
     } catch (e) {
@@ -91,8 +107,6 @@ export function VideoSection() {
         <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-black">
           <iframe
             ref={iframeRef}
-            // background=1 -> no controles, no barra, no scrub
-            // muted=1 para autoplay consistente (el sonido se habilita via API con click)
             src="https://player.vimeo.com/video/1169674089?autoplay=1&muted=1&loop=0&background=1&autopause=0"
             className="absolute inset-0 h-full w-full"
             frameBorder="0"
@@ -113,7 +127,7 @@ export function VideoSection() {
             </button>
           )}
 
-          {/* Barra de progreso (siempre visible, sin permitir scrub) */}
+          {/* Barra "fake" */}
           <div className="absolute bottom-0 left-0 h-1 w-full bg-white/15">
             <div
               className="h-full bg-white/80 transition-[width] duration-150"
