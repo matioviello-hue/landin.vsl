@@ -9,7 +9,6 @@ export function VideoSection() {
             className="absolute inset-0 h-full w-full object-cover"
             src=" public/vsl oficial 2026 landing (1).mp4"
             autoPlay
-            muted
             playsInline
             loop
             preload="auto"
