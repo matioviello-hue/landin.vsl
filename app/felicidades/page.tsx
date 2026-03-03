@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-export default function GraciasPage() {
+export default function felicidadesPage() {
 
   useEffect(() => {
     // Dispara evento para Meta Pixel
