@@ -23,7 +23,7 @@ export function CtaSection() {
     const onMessage = (e: MessageEvent) => {
       if (!e?.data || typeof e.data !== "object") return;
       if ((e.data as any).event === "calendly.event_scheduled") {
-        router.push("/gracias");
+        router.push("/felicidades");
       }
     };
 
