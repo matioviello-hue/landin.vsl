@@ -5,7 +5,7 @@ import { useEffect } from "react";
 export default function GraciasPage() {
 
   useEffect(() => {
-    // Evento para Meta Pixel (cuando llegan acá)
+    // Dispara evento para Meta Pixel
     // @ts-ignore
     if (window.fbq) {
       // @ts-ignore
@@ -14,18 +14,18 @@ export default function GraciasPage() {
   }, []);
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-background px-6">
-      <div className="text-center max-w-xl">
-        <h1 className="text-3xl md:text-4xl font-semibold mb-4">
-          ✅ Llamada agendada
+    <main className="min-h-screen flex items-center justify-center px-6 text-center">
+      <div className="max-w-xl">
+        <h1 className="text-3xl md:text-4xl font-bold">
+          ¡Listo! Reunión agendada ✅
         </h1>
 
-        <p className="text-muted-foreground text-lg">
-          Revisá tu email porque ya te enviamos la confirmación.
+        <p className="mt-4 text-base md:text-lg opacity-80">
+          Te va a llegar un email con el link de la reunión y los detalles.
         </p>
 
-        <p className="mt-4 text-sm opacity-70">
-          Nos vemos en la reunión.
+        <p className="mt-6 text-sm opacity-70">
+          Si no lo ves, revisá spam o promociones.
         </p>
       </div>
     </main>
