@@ -43,7 +43,7 @@ export function VideoSection() {
     }
 
     const existing = document.querySelector(
-      'script[src="https://vimeo.com/1169674089?share=copy&fl=sv&fe=ci"]'
+      'script[src="https://player.vimeo.com/api/player.js"]'
     );
 
     if (existing) {
@@ -52,7 +52,7 @@ export function VideoSection() {
     }
 
     const script = document.createElement("script");
-    script.src = "https://vimeo.com/1169674089?share=copy&fl=sv&fe=ci";
+    script.src = "https://vimeo.com/1169674089";
     script.async = true;
     script.onload = initPlayer;
     document.body.appendChild(script);
